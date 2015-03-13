@@ -39,7 +39,7 @@ module KoEV3
     end
   end
 
-  class << TONE = OutDevice.new
+  class << TONE = OutDevice.new("/sys/devices/platform/snd-legoev3")
     def play freq, dur_ms
       out 'tone', "#{freq} #{dur_ms}"
     end
