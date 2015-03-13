@@ -32,9 +32,11 @@ module KoEV3
       @device_dir = device_dir
     end
 
-    def out name: value
-      File.open(File.join(@device_dir, name.to_s), 'w'){|v_file|
-        v_file.puts value
+    def out pairs
+      pairs.each{|name, value|
+        File.open(File.join(@device_dir, name.to_s), 'w'){|v_file|
+          v_file.puts value
+        }
       }
     end
 
