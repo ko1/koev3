@@ -32,20 +32,52 @@ module KoEV3
       @device_dir = device_dir
     end
 
-    def out name, value
-      File.open(File.join(@device_dir, name), 'w'){|v_file|
+    def out name: value
+      File.open(File.join(@device_dir, name.to_s), 'w'){|v_file|
         v_file.puts value
+      }
+    end
+
+    def input name
+      File.open(File.join(@device_dir, name.to_s)){|f|
+        f.read.chomp
       }
     end
   end
 
+  class SideColorLED < OutDevice
+    def initialize side, color
+      super "/sys/class/leds/ev3:#{color}:#{side}"
+      @max_brightness = input(:max_brightness).to_i
+    end
+
+    def on brightness = 255
+      set_brightness brightness
+    end
+
+    def off color, brightness = 0
+      set_brightness brightness
+    end
+
+    def set_brightness brightness
+      raise if brightness < 0
+      raise if brightness > @max_brightness
+      out brightness: brightness
+    end
+  end
+
+  LEFT_GREEN_LED  = SideColorLED.new(:left, :green)
+  LEFT_RED_LED    = SideColorLED.new(:left, :red)
+  RIGHT_GREEN_LED = SideColorLED.new(:right, :green)
+  RIGHT_RED_LED   = SideColorLED.new(:right, :red)
+
   class << TONE = OutDevice.new("/sys/devices/platform/snd-legoev3")
     def play freq, dur_ms
-      out 'tone', "#{freq} #{dur_ms}"
+      out tone: "#{freq} #{dur_ms}"
     end
 
     def stop
-      out 0
+      out tone: 0
     end
   end
 
