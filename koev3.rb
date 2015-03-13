@@ -57,7 +57,7 @@ module KoEV3
       set_brightness brightness
     end
 
-    def off color, brightness = 0
+    def off brightness = 0
       set_brightness brightness
     end
 
