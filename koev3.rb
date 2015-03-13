@@ -73,6 +73,43 @@ module KoEV3
   RIGHT_GREEN_LED = SideColorLED.new(:right, :green)
   RIGHT_RED_LED   = SideColorLED.new(:right, :red)
 
+  class SideLED
+    def initialize green, red
+      @green = green
+      @red = red
+      @LEDS = [green, red]
+    end
+
+    def on color
+      case color
+      when :green
+        @green.on
+        @red.off
+      when :red
+        @green.off
+        @red.on
+      when :yellow
+        @green.on
+        @red.on 25
+      when :orange
+        @green.on 255
+        @red.on 120
+      when :amber
+        @green.on
+        @red.on
+      else
+        raise "unsupported color: #{color}"
+      end
+    end
+
+    def off
+      @LEDS.each{|l| l.off }
+    end
+  end
+
+  LEFT_LED  = SideLED.new(LEFT_GREEN_LED, LEFT_RED_LED)
+  RIGHT_LED = SideLED.new(RIGHT_GREEN_LED, RIGHT_RED_LED)
+
   class << TONE = OutDevice.new("/sys/devices/platform/snd-legoev3")
     def play freq, dur_ms
       out tone: "#{freq} #{dur_ms}"
