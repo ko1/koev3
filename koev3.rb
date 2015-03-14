@@ -162,11 +162,16 @@ module KoEV3
 end
 
 if $0 == __FILE__
-  colors = KoEV3::SideLED::COLORS.cycle
-  10.times{|i|
-    KoEV3::TONE.play 200*i, 100
-    KoEV3::LEFT_LED.on colors.next
-    KoEV3::RIGHT_LED.on colors.next
-    sleep 0.1
-  }
+  begin
+    colors = KoEV3::SideLED::COLORS.cycle
+    10.times{|i|
+      KoEV3::TONE.play 200*i, 200
+      KoEV3::LEFT_LED.on colors.next
+      KoEV3::RIGHT_LED.on colors.next
+      sleep 0.1
+    }
+  ensure
+    KoEV3::LEFT_LED.off
+    KoEV3::RIGHT_LED.off
+  end
 end
