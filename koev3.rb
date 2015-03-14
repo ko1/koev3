@@ -1,56 +1,74 @@
 Object.send(:remove_const, :KoEV3) if defined? Object::KoEV3
 
 module KoEV3
-  class Sensor
-    def initialize sensor_dir
-      @sensor_dir = sensor_dir
+  class Device
+    def initialize class_dir
+      @class_dir = class_dir
     end
 
-    def value n
-      File.read(File.join(@sensor_dir, "value#{n}"))
+    def read name
+      File.open(File.join(@class_dir, name.to_s)){|f|
+        f.read.chomp
+      }
     end
 
-    def int_value n
-      value(n).to_i
+    def write name, value
+      File.open(File.join(@class_dir, name.to_s), 'w'){|f|
+        f.write value
+      }
     end
+
+    def self.device_attr_reader name
+      self.class_eval %Q{
+        def #{name}
+          read("#{name}")
+        end
+
+        def int_#{name}
+          read("#{name}").to_i
+        end
+      }
+    end
+
+    def self.device_attr_writer name
+      self.class_eval %Q{
+        def #{name}=(value)
+          read("#{name}")
+        end
+      }
+    end
+
+    def self.device_attr name
+      device_attr_reader name
+      device_attr_writer name
+    end
+  end
+
+  class Sensor < Device
+    10.times{|i|
+      device_attr_reader "value#{i}"
+    }
 
     class GyroSensor < Sensor
       def angle
-        int_value(0)
+        int_value0
       end
     end
 
     class TouchSensor < Sensor
       def touch?
-        int_value(0) == 1
+        int_value0 == 1
       end
     end
   end
 
-  class OutDevice
-    def initialize device_dir
-      @device_dir = device_dir
-    end
+  class SideColorLED < Device
+    device_attr_reader :max_brightness
+    device_attr :brightness
 
-    def out pairs
-      pairs.each{|name, value|
-        File.open(File.join(@device_dir, name.to_s), 'w'){|v_file|
-          v_file.puts value
-        }
-      }
-    end
-
-    def input name
-      File.open(File.join(@device_dir, name.to_s)){|f|
-        f.read.chomp
-      }
-    end
-  end
-
-  class SideColorLED < OutDevice
     def initialize side, color
       super "/sys/class/leds/ev3:#{color}:#{side}"
-      @max_brightness = input(:max_brightness).to_i
+      @max_brightness = int_max_brightness
     end
 
     def on brightness = 255
@@ -64,7 +82,7 @@ module KoEV3
     def set_brightness brightness
       raise if brightness < 0
       raise if brightness > @max_brightness
-      out brightness: brightness
+      self.brightness = brightness
     end
   end
 
@@ -110,15 +128,19 @@ module KoEV3
   LEFT_LED  = SideLED.new(LEFT_GREEN_LED, LEFT_RED_LED)
   RIGHT_LED = SideLED.new(RIGHT_GREEN_LED, RIGHT_RED_LED)
 
-  class << TONE = OutDevice.new("/sys/devices/platform/snd-legoev3")
+  class Tone < Device
+    device_attr :tone
+
     def play freq, dur_ms
-      out tone: "#{freq} #{dur_ms}"
+      self.tone = "#{freq} #{dur_ms}"
     end
 
     def stop
-      out tone: 0
+      self.tone = 0
     end
   end
+
+  TONE = Tone.new("/sys/devices/platform/snd-legoev3")
 
   # initialize sensors
   Dir.glob('/sys/class/lego-sensor/sensor*/driver_name'){|file|
