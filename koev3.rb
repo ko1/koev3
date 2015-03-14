@@ -98,6 +98,8 @@ module KoEV3
       @LEDS = [green, red]
     end
 
+    COLORS = [:green, :red, :yellow, :orange, :amber, :black]
+
     def on color
       case color
       when :green
@@ -115,6 +117,9 @@ module KoEV3
       when :amber
         @green.on
         @red.on
+      when :black
+        @green.off
+        @red.off
       else
         raise "unsupported color: #{color}"
       end
@@ -157,5 +162,11 @@ module KoEV3
 end
 
 if $0 == __FILE__
-  10.times{|i| KoEV3::TONE.play 200*i, 100; sleep 0.1}
+  colors = KoEV3::SideLED::COLORS.cycle
+  10.times{|i|
+    KoEV3::TONE.play 200*i, 100
+    KoEV3::LEFT_LED.on colors[i]
+    KoEV3::WRITE_LED.on colors[i+1]
+    sleep 0.1
+  }
 end
