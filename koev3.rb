@@ -13,8 +13,8 @@ module KoEV3
     end
 
     def write name, value
-      File.open(File.join(@class_dir, name.to_s), 'w'){|f|
-        f.write value
+      File.open(File.join(@class_dir, name), 'w'){|f|
+        f.write value.to_s
       }
     end
 
@@ -33,7 +33,7 @@ module KoEV3
     def self.device_attr_writer name
       self.class_eval %Q{
         def #{name}=(value)
-          read("#{name}")
+          write("#{name}", value)
         end
       }
     end
@@ -165,8 +165,8 @@ if $0 == __FILE__
   colors = KoEV3::SideLED::COLORS.cycle
   10.times{|i|
     KoEV3::TONE.play 200*i, 100
-    KoEV3::LEFT_LED.on colors[i]
-    KoEV3::WRITE_LED.on colors[i+1]
+    KoEV3::LEFT_LED.on colors.next
+    KoEV3::RIGHT_LED.on colors.next
     sleep 0.1
   }
 end
