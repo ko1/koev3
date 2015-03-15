@@ -1,6 +1,10 @@
 Object.send(:remove_const, :KoEV3) if defined? Object::KoEV3
 
 module KoEV3
+  def self.reload
+    load __FILE__
+  end
+
   class Device
     def initialize class_dir
       @class_dir = class_dir
