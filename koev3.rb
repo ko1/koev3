@@ -22,14 +22,19 @@ module KoEV3
       }
     end
 
-    def self.device_attr_reader name
+    def self.device_attr_reader name, type = nil
+      case type
+      when nil
+        trans = ''
+      when :int
+        trans = '.to_i'
+      when :float
+        trans = '.to_f'
+      end
+
       self.class_eval %Q{
         def #{name}
-          read("#{name}")
-        end
-
-        def int_#{name}
-          read("#{name}").to_i
+          read("#{name}")#{trans}
         end
       }
     end
@@ -42,37 +47,37 @@ module KoEV3
       }
     end
 
-    def self.device_attr name
-      device_attr_reader name
+    def self.device_attr name, type = nil
+      device_attr_reader name, type
       device_attr_writer name
     end
   end
 
   class Sensor < Device
     10.times{|i|
-      device_attr_reader "value#{i}"
+      device_attr_reader "value#{i}", :int
     }
 
     class GyroSensor < Sensor
       def angle
-        int_value0
+        value0
       end
     end
 
     class TouchSensor < Sensor
       def touch?
-        int_value0 == 1
+        value0 == 1
       end
     end
   end
 
   class SideColorLED < Device
-    device_attr_reader :max_brightness
-    device_attr :brightness
+    device_attr_reader :max_brightness, :int
+    device_attr :brightness. :int
 
     def initialize side, color
       super "/sys/class/leds/ev3:#{color}:#{side}"
-      @max_brightness = int_max_brightness
+      @max_brightness = self.max_brightness
     end
 
     def on brightness = 255
@@ -137,8 +142,13 @@ module KoEV3
   LEFT_LED  = SideLED.new(LEFT_GREEN_LED, LEFT_RED_LED)
   RIGHT_LED = SideLED.new(RIGHT_GREEN_LED, RIGHT_RED_LED)
 
+  def (BOTH_LED = Object.new).off
+    LEFT_LED.off
+    RIGHT_LED.off
+  end
+
   class Tone < Device
-    device_attr :tone
+    device_attr :tone, :int
 
     def play freq, dur_ms
       self.tone = "#{freq} #{dur_ms}"
