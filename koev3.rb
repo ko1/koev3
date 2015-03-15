@@ -121,7 +121,7 @@ module KoEV3
     end
 
     def speed sp
-      self.duty_mode_sp = sp
+      self.duty_cycle_sp = sp
     end
   end
 
