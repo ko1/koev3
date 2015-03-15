@@ -120,6 +120,15 @@ module KoEV3
       self.run = 0
     end
 
+    def estop
+      self.estop = 1
+    end
+
+    def cancel_estop
+      n = self.estop
+      self.estop = n if n != 0
+    end
+
     def speed sp
       self.duty_cycle_sp = sp
     end
