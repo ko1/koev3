@@ -73,7 +73,7 @@ module KoEV3
 
   class SideColorLED < Device
     device_attr_reader :max_brightness, :int
-    device_attr :brightness. :int
+    device_attr :brightness, :int
 
     def initialize side, color
       super "/sys/class/leds/ev3:#{color}:#{side}"
