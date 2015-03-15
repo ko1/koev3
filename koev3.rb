@@ -30,6 +30,10 @@ module KoEV3
         trans = '.to_i'
       when :float
         trans = '.to_f'
+      when :str_seq
+        trans = '.split(/\s/)'
+      else
+        raise "Unsupported type: #{type}"
       end
 
       self.class_eval %Q{
@@ -70,6 +74,62 @@ module KoEV3
       end
     end
   end
+
+  class TachoMotor < Device
+    device_attr_reader :encoder_modes, :str_seq
+    device_attr_reader :polarity_modes, :str_seq
+    device_attr_reader :position_modes, :str_seq
+    device_attr_reader :regulation_modes, :str_seq
+    device_attr_reader :run_modes, :str_seq
+    device_attr_reader :stop_modes, :str_seq
+    device_attr_reader :port_name
+    device_attr_reader :state
+    device_attr_reader :type
+    device_attr_reader :duty_cycle, :int
+
+    device_attr :duty_cycle_sp, :int
+    device_attr :encoder_mode
+    device_attr :estop, :int
+    device_attr :polarity_mode
+    device_attr :position, :int
+    device_attr :position_mode
+    device_attr :position_sp, :int
+    device_attr :pulses_per_second, :int
+    device_attr :pulses_per_second_sp, :int
+    device_attr :ramp_down_sp, :int
+    device_attr :ramp_up_sp, :int
+    device_attr :regulation_mode
+    device_attr :run, :int
+    device_attr :run_mode
+    device_attr :speed_regulation_D, :int
+    device_attr :speed_regulation_I, :int
+    device_attr :speed_regulation_K, :int
+    device_attr :speed_regulation_P, :int
+    device_attr :stop_mode
+    device_attr :time_sp, :int
+
+    def initialize class_path
+      super
+    end
+
+    def run
+      self.run = 1
+    end
+
+    def stop
+      self.run = 0
+    end
+
+    def speed sp
+      self.duty_mode_sp = sp
+    end
+  end
+
+  TACHO_MOTORS = []
+
+  Dir.glob("/sys/class/tacho-motor/motor*"){|dir|
+    TACHO_MOTORS << TachoMotor.new(dir)
+  }
 
   class SideColorLED < Device
     device_attr_reader :max_brightness, :int
