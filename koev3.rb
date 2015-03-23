@@ -61,9 +61,25 @@ module KoEV3
     10.times{|i|
       device_attr_reader "value#{i}", :int
     }
+    device_attr_reader "modes"
+    device_attr "mode"
+
+    def set_mdoe m
+      raise "unknown mode: #{m}" unless @modes.include?(m)
+      self.mode = m
+    end
+
+    def initialize class_dir
+      super
+      @modes = self.modes.split(/\s/)
+    end
 
     class GyroSensor < Sensor
       def angle
+        value0
+      end
+
+      def rotation_speed
         value0
       end
     end
